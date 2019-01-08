@@ -1,0 +1,149 @@
+= The Ribose Jenkins Docker container
+
+== Purpose
+
+Build a customized Jenkins docker image with required packages such as:
+
+* https://aws.amazon.com/cli/[`AWS Command Line Interface`]
+* https://www.rust-lang.org/[`Rust`]
+* https://www.nereon.com/[`Nereon`]
+* https://www.riffol.com/[`Riffol`]
+
+based on the standard Jenkins docker image.
+
+
+== Pulling the container
+
+This container is published at the https://hub.docker.com/r/ribose/jenkins/[Docker Registry] as `docker.io/ribose/jenkins`,
+and can be pulled with the following command:
+
+[source,sh]
+----
+docker pull ribose/jenkins
+----
+
+
+== Usage
+
+The `Makefile` in this repository is rather complicated, but
+all necessary for enabling quick iteration of the resulting
+containers.
+
+=== Upgrade Jenkins
+
+Change these lines in Makefile to update the version of Jenkins.
+
+[source,sh]
+----
+VERSIONS ?= x.y
+ROOT_IMAGES ?= jenkins/jenkins:x.y
+----
+
+Run this command to build the image.
+
+[source,sh]
+----
+make bsp-jenkins
+----
+
+=== Running the containers (and bash) via the Makefile
+
+And the `Makefile` makes life much simpler.
+To start the `jenkins` container and enter it with `bash`,
+all you need is:
+
+[source,sh]
+----
+make run-jenkins
+----
+
+To kill the container:
+
+[source,sh]
+----
+make kill-jenkins
+----
+
+The `Makefile` supports the following commands related to running:
+
+[source,sh]
+----
+make {run,kill,rm,rmf}-{container-flavor}
+----
+
+
+== Building the containers yourself
+
+For those concerned about security you might not want to use
+our container but build your own.
+This `Makefile` allows for such a case (as you can imagine).
+
+All you have to set is a couple environment variables.
+
+For example, if you use AWS' ECR, you can set this:
+
+[source,sh]
+----
+export NS_REMOTE=${account-id}.dkr.ecr.${region}.amazonaws.com/${account-name}
+export DOCKER_LOGIN_CMD='\$(shell aws ecr get-login --no-include-email --region=${region} --registry-ids=${ecr-registry-id})'
+----
+
+If you want to build other containers you can add these:
+
+[source,sh]
+----
+export VERSIONS="x.y"
+export ROOT_IMAGES="jenkins/jenkins:x.y"
+----
+
+The environment variables are used for:
+
+`NS_REMOTE`:: the namespace for your remote repository
+(to separate from builds intended for local consumption)
+
+`DOCKER_LOGIN_CMD`:: how you authenticate against your repository
+
+`VERSIONS`:: how you want to tag the resulting image
+
+`ROOT_IMAGES`:: the container your new image should be based on
+
+=== Makefile build targets
+
+The `Makefile` supports the following commands for building:
+
+[source,sh]
+----
+make {build,push,tag,squash,clean-remote,clean-local}-{container-flavor}
+----
+
+NOTE: The `squash-{container-flavor}` command relies on
+(and automatically pulls) the
+https://github.com/riboseinc/docker-squash-container[`docker-squash` container]
+
+
+== Chain commands
+
+If you feel tired typing out this:
+
+[source,sh]
+----
+make build-jenkins squash-jenkins push-jenkins
+----
+
+We have a list of shortcut targets to save you from repeating fingers.
+For example:
+
+[source,sh]
+----
+# equivalent to make {build,squash,push}-jenkins
+make bsp-jenkins
+----
+
+The shortcut targets are:
+
+`bsp-{target}`:: build + squash + push
+`btp-{target}`:: build + tag + push
+`bs-{target}`:: build + squash
+`bt-{target}`:: build + tag
+`sp-{target}`:: squash + push
+`tp-{target}`:: tag + push
