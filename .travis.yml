@@ -1,0 +1,13 @@
+sudo: required
+env:
+services:
+- docker
+before_install:
+- "./.travis/main.sh"
+script:
+- make build
+after_success:
+- |
+  if [[ -n "$TRAVIS_TAG" ]]; then
+    make tp ;
+  fi

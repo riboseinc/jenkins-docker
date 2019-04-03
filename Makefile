@@ -129,3 +129,6 @@ bs-$(3): build-$(3) squash-$(3)
 endef
 
 $(foreach i,$(ITEMS),$(eval $(call ROOT_IMAGE_TASKS,$(call GET_VERSION,$i),$(call GET_ROOT_IMAGE,$i),$(call GET_IMAGE_TYPE,$i),$(CONTAINER_TYPE))))
+
+build: $(addprefix build-, $(notdir $(IMAGE_TYPES)))
+tp: $(addprefix tp-, $(notdir $(IMAGE_TYPES)))
