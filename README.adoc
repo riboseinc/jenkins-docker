@@ -1,5 +1,7 @@
 = The Ribose Jenkins Docker container
 
+image:https://travis-ci.com/riboseinc/jenkins-docker.svg?branch=master["Build Status", link="https://travis-ci.com/riboseinc/jenkins-docker"]
+
 == Purpose
 
 Build a customized Jenkins docker image with required packages such as:
