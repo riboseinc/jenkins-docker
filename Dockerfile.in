@@ -8,7 +8,7 @@ RUN apt-get clean && apt-get -qq update && apt-get -yqq upgrade
 
 # Install base packages
 RUN apt-get clean && apt-get update && \
-  apt-get install -yqq --force-yes --no-install-recommends git-core \
+  apt-get install -yqq --allow --no-install-recommends git-core \
   sudo \
   gcc \
   curl \
