@@ -16,8 +16,8 @@ DOCKER_SQUASH_CMD := $(DOCKER_RUN) --rm \
 
 ITEMS       ?= 1
 IMAGE_TYPES ?= jenkins
-VERSIONS		?= 2.206
-ROOT_IMAGES ?= jenkins/jenkins:2.206
+VERSIONS		?= 2.305
+ROOT_IMAGES ?= jenkins/jenkins:2.305
 
 # Getters
 GET_IMAGE_TYPE = $(word $1,$(IMAGE_TYPES))

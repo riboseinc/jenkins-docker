@@ -8,7 +8,7 @@ RUN apt-get clean && apt-get -qq update && apt-get -yqq upgrade
 
 # Install base packages
 RUN apt-get clean && apt-get update && \
-  apt-get install -yqq --allow --no-install-recommends git-core \
+  apt-get install -yqq --no-install-recommends git-core \
   sudo \
   gcc \
   curl \
@@ -29,13 +29,14 @@ RUN apt-get clean && apt-get update && \
   libcurl4-openssl-dev \
   software-properties-common \
   libffi-dev \
-  python-dev \
   python3-dev \
+  python3-venv \
   openssh-server \
   jq
 RUN echo "jenkins ALL=NOPASSWD: ALL" >> /etc/sudoers
 
 # install the latest aws-cli
+RUN ln -s /usr/bin/python3.7 /usr/bin/python
 RUN \
   temp_path=$(mktemp -d); \
   curl https://s3.amazonaws.com/aws-cli/awscli-bundle.zip -o ${temp_path}/awscli-bundle.zip \
@@ -50,19 +51,13 @@ COPY init.groovy/* /usr/share/jenkins/ref/init.groovy.d/
 
 # Use base container's ARGs by default
 ARG JENKINS_OVERRIDE_VERSION
-ARG JENKINS_OVERRIDE_SHA
 ENV JENKINS_OVERRIDE_VERSION=${JENKINS_OVERRIDE_VERSION}
-# ENV JENKINS_OVERRIDE_SHA=${JENKINS_OVERRIDE_SHA} \
 RUN mkdir /var/log/jenkins && chown -R jenkins:jenkins /var/log/jenkins
 
-# for debugging:
-# echo "--(${JENKINS_OVERRIDE_SHA})--"; \
-RUN \
-  JENKINS_URL=http://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${JENKINS_OVERRIDE_VERSION}/jenkins-war-${JENKINS_OVERRIDE_VERSION}.war; \
-  JENKINS_SHA_URL=${JENKINS_URL}.sha1; \
-  JENKINS_OVERRIDE_SHA="$(curl ${JENKINS_SHA_URL})"; \
-  curl -fsSL ${JENKINS_URL} -o /usr/share/jenkins/jenkins.war \
-  && echo "${JENKINS_OVERRIDE_SHA}  /usr/share/jenkins/jenkins.war" | sha1sum -c -
+ENV JENKINS_URL=https://updates.jenkins-ci.org/download/war/${JENKINS_OVERRIDE_VERSION}/jenkins.war
+RUN curl -fsSL ${JENKINS_URL} -o /usr/share/jenkins/jenkins.war
+# verify jenkins.war
+RUN jarsigner -verify -verbose /usr/share/jenkins/jenkins.war
 
 # inject bootstrap script
 COPY bootstrap.sh /usr/local/bin/bootstrap.sh
